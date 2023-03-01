@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewsApp.Dto;
 using PokemonReviewsApp.Interfaces;
-using PokemonReviewsApp.Repository;
+using PokemonReviewsApp.Models;
 
 namespace PokemonReviewsApp.Controllers
 {
@@ -67,6 +66,42 @@ namespace PokemonReviewsApp.Controllers
             }
 
             return Ok(pokemons);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateCountry([FromBody] OwnerDto ownerDto)
+        {
+            if (ownerDto is null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var owner = _ownerRepository.GetOwners()
+                .Where(c => c.LastName.Trim().ToUpper() == ownerDto.Las.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (owner is not null)
+            {
+                ModelState.AddModelError("", "Owner already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var countryMap = _mapper.Map<Owner>(ownerDto);
+
+            if (!_ownerRepository.CreateOwner(countryMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Succesfuly created");
         }
     }
 }
