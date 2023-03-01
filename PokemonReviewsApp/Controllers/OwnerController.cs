@@ -11,12 +11,14 @@ namespace PokemonReviewsApp.Controllers
     public class OwnerController : ControllerBase
     {
         private readonly IOwnerRepository _ownerRepository;
+        private readonly ICountryRepository _countryRepository;
         private readonly IMapper _mapper;
 
-        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper)
+        public OwnerController(IOwnerRepository ownerRepository, IMapper mapper, ICountryRepository countryRepository)
         {
             _ownerRepository = ownerRepository;
             _mapper = mapper;
+            _countryRepository = countryRepository;
         }
 
         [HttpGet]
@@ -71,7 +73,7 @@ namespace PokemonReviewsApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateCountry([FromBody] OwnerDto ownerDto)
+        public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerDto)
         {
             if (ownerDto is null)
             {
@@ -79,7 +81,7 @@ namespace PokemonReviewsApp.Controllers
             }
 
             var owner = _ownerRepository.GetOwners()
-                .Where(c => c.LastName.Trim().ToUpper() == ownerDto.Las.TrimEnd().ToUpper())
+                .Where(c => c.LastName.Trim().ToUpper() == ownerDto.LastName.TrimEnd().ToUpper())
                 .FirstOrDefault();
 
             if (owner is not null)
@@ -93,9 +95,11 @@ namespace PokemonReviewsApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            var countryMap = _mapper.Map<Owner>(ownerDto);
+            var ownerMap = _mapper.Map<Owner>(ownerDto);
 
-            if (!_ownerRepository.CreateOwner(countryMap))
+            ownerMap.Country = _countryRepository.GetCountry(countryId);
+
+            if (!_ownerRepository.CreateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
