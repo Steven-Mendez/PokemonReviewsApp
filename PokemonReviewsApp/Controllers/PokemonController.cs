@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReviewsApp.Dto;
 using PokemonReviewsApp.Interfaces;
 using PokemonReviewsApp.Models;
+using PokemonReviewsApp.Repository;
 
 namespace PokemonReviewsApp.Controllers
 {
@@ -62,6 +63,42 @@ namespace PokemonReviewsApp.Controllers
                 return BadRequest(ModelState);
 
             return Ok(rating);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateOwner([FromQuery] int ownerId, [FromQuery] int catId, [FromBody] PokemonDto pokemonDto)
+        {
+            if (pokemonDto is null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var pokemons = _pokemonRepository.GetPokemons()
+                .Where(c => c.Name.Trim().ToUpper() == pokemonDto.Name.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (pokemons is not null)
+            {
+                ModelState.AddModelError("", "Pokemon already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var pokemonMap = _mapper.Map<Pokemon>(pokemonDto);
+            
+            if (!_pokemonRepository.CreatePokemon(ownerId, catId, pokemonMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Succesfuly created");
         }
     }
 }
