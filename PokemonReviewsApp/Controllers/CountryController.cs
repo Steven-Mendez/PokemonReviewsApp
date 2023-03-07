@@ -67,7 +67,7 @@ namespace PokemonReviewsApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetPokemonsByCategoryId(int countryId)
         {
-            var country = _mapper.Map<List<Country>>(
+            var country = _mapper.Map<List<CountryDto>>(
                 _countryRepository.GetCountry(countryId));
 
             if (!ModelState.IsValid)
@@ -110,6 +110,33 @@ namespace PokemonReviewsApp.Controllers
             }
 
             return Ok("Succesfuly created");
+        }
+
+        [HttpDelete("{countryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCountry(int countryId)
+        {
+            if (!_countryRepository.CountryExits(countryId))
+            {
+                return NotFound();
+            }
+
+            var countryToDelete = _countryRepository.GetCountry(countryId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_countryRepository.DeleteCountry(countryToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting country");
+                return BadRequest(ModelState);
+            }
+
+            return NoContent();
         }
     }
 }

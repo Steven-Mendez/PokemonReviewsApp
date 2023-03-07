@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using PokemonReviewsApp.Data;
 using PokemonReviewsApp.Interfaces;
 using PokemonReviewsApp.Models;
-using System.Runtime.Intrinsics.X86;
 
 namespace PokemonReviewsApp.Repository
 {
@@ -21,6 +20,12 @@ namespace PokemonReviewsApp.Repository
         public bool CreateReviewer(Reviewer reviewer)
         {
             _context.Add(reviewer);
+            return Save();
+        }
+
+        public bool DeleteReviewer(Reviewer reviewer)
+        {
+            _context.Remove(reviewer);
             return Save();
         }
 
@@ -52,6 +57,11 @@ namespace PokemonReviewsApp.Repository
         public bool Save()
         {
             return _context.SaveChanges() > 0;
+        }
+
+        public bool UpdateReviewer(Reviewer reviewer)
+        {
+            throw new NotImplementedException();
         }
     }
 }
