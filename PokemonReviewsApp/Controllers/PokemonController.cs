@@ -94,7 +94,7 @@ namespace PokemonReviewsApp.Controllers
             }
 
             var pokemonMap = _mapper.Map<Pokemon>(pokemonDto);
-            
+
             if (!_pokemonRepository.CreatePokemon(ownerId, catId, pokemonMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
@@ -102,6 +102,43 @@ namespace PokemonReviewsApp.Controllers
             }
 
             return Ok("Succesfuly created");
+        }
+
+        [HttpPut("{pokemonId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdatePokemon(int pokemonId, [FromBody] PokemonDto updatedPokemon)
+        {
+            if (updatedPokemon is null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (pokemonId != updatedPokemon.Id)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_pokemonRepository.PokemonExits(pokemonId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var pokemonrMap = _mapper.Map<Pokemon>(updatedPokemon);
+
+            if (!_pokemonRepository.UpdatePokemon(pokemonrMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating pokemon");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
         }
 
         [HttpDelete("{pokemonId}")]

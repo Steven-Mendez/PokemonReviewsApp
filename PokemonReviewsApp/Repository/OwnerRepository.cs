@@ -61,7 +61,8 @@ namespace PokemonReviewsApp.Repository
 
         public bool UpdateOwner(Owner owner)
         {
-            throw new NotImplementedException();
+            _context.Update(owner);
+            return Save();
         }
     }
 }

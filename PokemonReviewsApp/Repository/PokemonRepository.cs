@@ -82,7 +82,8 @@ namespace PokemonReviewsApp.Repository
 
         public bool UpdatePokemon(Pokemon pokemon)
         {
-            throw new NotImplementedException();
+            _context.Update(pokemon);
+            return Save();
         }
     }
 }

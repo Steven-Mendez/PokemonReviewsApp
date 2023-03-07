@@ -52,7 +52,8 @@ namespace PokemonReviewsApp.Repository
 
         public bool UpdateCateogry(Category category)
         {
-            throw new NotImplementedException();
+            _context.Update(category);
+            return Save();
         }
     }
 }

@@ -62,7 +62,8 @@ namespace PokemonReviewsApp.Repository
 
         public bool UpdateCountry(Country country)
         {
-            throw new NotImplementedException();
+            _context.Update(country);
+            return Save();
         }
     }
 }
