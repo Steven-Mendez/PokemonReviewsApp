@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewsApp.Dto;
 using PokemonReviewsApp.Interfaces;
+using PokemonReviewsApp.Models;
 
 namespace PokemonReviewsApp.Controllers
 {
@@ -10,12 +11,16 @@ namespace PokemonReviewsApp.Controllers
     public class ReviewController : ControllerBase
     {
         private readonly IReviewRepository _reviewRepository;
+        private readonly IPokemonRepository _pokemonRepository;
+        private readonly IReviewerRepository _reviewerRepository;
         private readonly IMapper _mapper;
 
-        public ReviewController(IReviewRepository reviewRepository, IMapper mapper)
+        public ReviewController(IReviewRepository reviewRepository, IMapper mapper, IPokemonRepository pokemonRepository, IReviewerRepository reviewerRepository)
         {
             _reviewRepository = reviewRepository;
             _mapper = mapper;
+            _pokemonRepository = pokemonRepository;
+            _reviewerRepository = reviewerRepository;
         }
 
         [HttpGet]
@@ -57,6 +62,43 @@ namespace PokemonReviewsApp.Controllers
                 return BadRequest(ModelState);
 
             return Ok(reviews);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateReview([FromQuery] int reviewerId, [FromQuery] int pokeId, [FromBody] ReviewDto reviewDto)
+        {
+            if (reviewDto is null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var reviews = _reviewRepository.GetReviews()
+                .Where(c => c.Title.Trim().ToUpper() == reviewDto.Title.TrimEnd().ToUpper())
+                .FirstOrDefault();
+
+            if (reviews is not null)
+            {
+                ModelState.AddModelError("", "Review already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var reviewMap = _mapper.Map<Review>(reviewDto);
+            reviewMap.Pokemon = _pokemonRepository.GetPokemon(pokeId);
+            reviewMap.Reviewer = _reviewerRepository.GetReviewer(pokeId);
+
+            if (!_reviewRepository.CreateReview(reviewMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Succesfuly created");
         }
     }
 }

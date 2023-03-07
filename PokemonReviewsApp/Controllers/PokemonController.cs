@@ -22,10 +22,10 @@ namespace PokemonReviewsApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonDto>))]
         public IActionResult GetPokemons()
         {
-            var pokemons = _mapper.Map<List<ReviewerDto>>(_pokemonRepository.GetPokemons());
+            var pokemons = _mapper.Map<List<PokemonDto>>(_pokemonRepository.GetPokemons());
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -68,7 +68,7 @@ namespace PokemonReviewsApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateOwner([FromQuery] int ownerId, [FromQuery] int catId, [FromBody] PokemonDto pokemonDto)
+        public IActionResult CreatePokemon([FromQuery] int ownerId, [FromQuery] int catId, [FromBody] PokemonDto pokemonDto)
         {
             if (pokemonDto is null)
             {
