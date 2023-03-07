@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using PokemonReviewsApp.Data;
 using PokemonReviewsApp.Interfaces;
 using PokemonReviewsApp.Models;
+using System.Runtime.Intrinsics.X86;
 
 namespace PokemonReviewsApp.Repository
 {
@@ -15,6 +16,12 @@ namespace PokemonReviewsApp.Repository
         {
             _context = context;
             _mapper = mapper;
+        }
+
+        public bool CreateReviewer(Reviewer reviewer)
+        {
+            _context.Add(reviewer);
+            return Save();
         }
 
         public Reviewer GetReviewer(int reviewerId)
@@ -40,6 +47,11 @@ namespace PokemonReviewsApp.Repository
         public bool ReviwersExist(int reviewerId)
         {
             return _context.Reviewers.Any(r => r.Id == reviewerId);
+        }
+
+        public bool Save()
+        {
+            return _context.SaveChanges() > 0;
         }
     }
 }
